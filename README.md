@@ -136,4 +136,4 @@ Render build/start:
 
 ## Lisans
 
-Şu an lisans eklenmemiştir. İsterseniz `MIT` veya `Apache-2.0` lisansı ekleyebilirsiniz.
+Bu proje `MIT License` ile lisanslanmıştır.
