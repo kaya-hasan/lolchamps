@@ -1,0 +1,55 @@
+{% extends "champs/base.html" %}
+
+{% block title %}Yeni Rol Oluştur — LOL Champs{% endblock %}
+
+{% block content %}
+<div class="fade-in-up" style="max-width: 650px; margin: 0 auto;">
+    <nav class="mb-4">
+        <a href="{% url 'champs:champion_create' %}" class="text-decoration-none" style="color: var(--lol-text);">
+            <i class="bi bi-arrow-left me-1"></i> Şampiyon Oluşturmaya Dön
+        </a>
+    </nav>
+
+    <div class="card-lol p-4">
+        <h1 class="section-title" style="font-size:1.3rem;">
+            <i class="bi bi-diagram-3 me-2"></i>Yeni Rol Oluştur
+        </h1>
+        <hr class="section-divider">
+
+        <form method="post" novalidate>
+            {% csrf_token %}
+
+            <div class="mb-3">
+                <label for="id_name" class="form-label-lol">Rol Adı</label>
+                <input type="text" name="name" id="id_name" class="form-control form-control-lol" required>
+                {% if form.name.errors %}
+                <div class="mt-1">
+                    {% for error in form.name.errors %}
+                    <small style="color: var(--lol-red);"><i class="bi bi-exclamation-circle me-1"></i>{{ error }}</small>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="mb-3">
+                <label for="id_description" class="form-label-lol">Açıklama</label>
+                <textarea name="description" id="id_description" rows="4" class="form-control form-control-lol"></textarea>
+                {% if form.description.errors %}
+                <div class="mt-1">
+                    {% for error in form.description.errors %}
+                    <small style="color: var(--lol-red);"><i class="bi bi-exclamation-circle me-1"></i>{{ error }}</small>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="d-flex gap-2 mt-4">
+                <button type="submit" class="btn btn-lol">
+                    <i class="bi bi-check-lg me-1"></i> Kaydet
+                </button>
+                <a href="{% url 'champs:champion_create' %}" class="btn btn-lol-outline">İptal</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

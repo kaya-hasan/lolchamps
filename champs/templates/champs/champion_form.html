@@ -1,0 +1,89 @@
+{% extends "champs/base.html" %}
+
+{% block title %}{% if object %}{{ object.name }} Düzenle{% else %}Yeni Şampiyon{% endif %} — LOL Champs{% endblock %}
+
+{% block content %}
+<div class="fade-in-up" style="max-width: 700px; margin: 0 auto;">
+    <!-- Breadcrumb -->
+    <nav class="mb-4">
+        <a href="{% url 'champs:champion_list' %}" class="text-decoration-none" style="color: var(--lol-text);">
+            <i class="bi bi-arrow-left me-1"></i> Şampiyonlara Dön
+        </a>
+    </nav>
+
+    <div class="card-lol p-4">
+        <h1 class="section-title" style="font-size:1.4rem;">
+            {% if object %}
+                <i class="bi bi-pencil me-2"></i>{{ object.name }} — Düzenle
+            {% else %}
+                <i class="bi bi-plus-circle me-2"></i>Yeni Şampiyon Oluştur
+            {% endif %}
+        </h1>
+        {% if role_count == 0 %}
+        <div class="alert alert-lol mb-3">
+            Henüz rol yok. Önce <a href="{% url 'champs:role_create' %}" style="color: var(--lol-gold);">rol oluşturun</a> ya da
+            <a href="/admin/champs/role/" style="color: var(--lol-gold);">admin panelinden rol ekleyin</a>.
+        </div>
+        {% endif %}
+        <hr class="section-divider">
+
+        <form method="post" novalidate>
+            {% csrf_token %}
+
+            {% for field in form %}
+            <div class="mb-3">
+                <label for="{{ field.id_for_label }}" class="form-label-lol">{{ field.label }}</label>
+
+                {% if field.field.widget.input_type == 'checkbox' %}
+                    <div class="form-check">
+                        <input type="checkbox" name="{{ field.html_name }}" id="{{ field.id_for_label }}"
+                               class="form-check-input" {% if field.value %}checked{% endif %}>
+                        <label class="form-check-label" for="{{ field.id_for_label }}" style="color:var(--lol-text);">
+                            Bu şampiyon ücretsiz mi?
+                        </label>
+                    </div>
+                {% elif field.field.widget.input_type == 'select' or field.name == 'role' or field.name == 'difficulty' or field.name == 'playing_freq' or field.name == 'tier' %}
+                    <select name="{{ field.html_name }}" id="{{ field.id_for_label }}" class="form-select form-select-lol">
+                        {% for value, label in field.field.choices %}
+                        <option value="{{ value }}" {% if field.value|stringformat:"s" == value|stringformat:"s" %}selected{% endif %}>
+                            {{ label }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                {% elif field.name == 'lore' %}
+                    <textarea name="{{ field.html_name }}" id="{{ field.id_for_label }}" rows="5"
+                              class="form-control form-control-lol"
+                              placeholder="Şampiyonun hikayesini yazın...">{{ field.value|default:"" }}</textarea>
+                {% else %}
+                    <input type="text" name="{{ field.html_name }}" id="{{ field.id_for_label }}"
+                           value="{{ field.value|default:"" }}"
+                           class="form-control form-control-lol"
+                           placeholder="{{ field.label }}">
+                {% endif %}
+
+                {% if field.errors %}
+                <div class="mt-1">
+                    {% for error in field.errors %}
+                    <small style="color: var(--lol-red);">
+                        <i class="bi bi-exclamation-circle me-1"></i>{{ error }}
+                    </small>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+
+            <div class="d-flex gap-2 mt-4">
+                <button type="submit" class="btn btn-lol">
+                    {% if object %}
+                        <i class="bi bi-check-lg me-1"></i> Güncelle
+                    {% else %}
+                        <i class="bi bi-plus-lg me-1"></i> Oluştur
+                    {% endif %}
+                </button>
+                <a href="{% url 'champs:champion_list' %}" class="btn btn-lol-outline">İptal</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

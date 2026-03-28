@@ -1,0 +1,70 @@
+{% extends "champs/base.html" %}
+
+{% block title %}{{ role.name }} Rolü — LOL Champs{% endblock %}
+{% block meta_description %}{{ role.name }} rolüne sahip tüm League of Legends şampiyonları.{% endblock %}
+
+{% block content %}
+<div class="fade-in-up">
+    <!-- Breadcrumb -->
+    <nav class="mb-4">
+        <a href="{% url 'champs:champion_list' %}" class="text-decoration-none" style="color: var(--lol-text);">
+            <i class="bi bi-arrow-left me-1"></i> Şampiyonlara Dön
+        </a>
+    </nav>
+
+    <!-- Role Header -->
+    <div class="card-lol p-4 mb-4">
+        <div class="d-flex align-items-center gap-3 mb-2">
+            <span class="role-pill" style="font-size:0.9rem; padding:0.4rem 1rem;">{{ role.name }}</span>
+            <h1 style="font-size:1.6rem; font-weight:800; color:var(--lol-gold-light); margin:0;">
+                {{ role.name }} Rolü
+            </h1>
+        </div>
+        {% if role.description %}
+        <p style="color:var(--lol-text); margin-top:0.75rem; margin-bottom:0; line-height:1.7;">
+            {{ role.description }}
+        </p>
+        {% endif %}
+    </div>
+
+    <hr class="section-divider">
+
+    <!-- Champions in this role -->
+    <h2 class="section-title" style="font-size:1.2rem;">
+        <i class="bi bi-shield-shaded me-2"></i>Bu Roldeki Şampiyonlar
+        <span style="font-size:0.85rem; opacity:0.7;">({{ champions|length }})</span>
+    </h2>
+
+    {% if champions %}
+    <div class="row g-4">
+        {% for champ in champions %}
+        <div class="col-sm-6 col-md-4 col-lg-3">
+            <a href="{% url 'champs:champion_detail' champ.slug %}" class="text-decoration-none">
+                <div class="card-lol p-3 h-100">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <span class="tier-badge tier-{{ champ.get_tier_display|lower }}">
+                            {{ champ.get_tier_display }}
+                        </span>
+                        {% if champ.is_free %}
+                        <span class="free-badge"><i class="bi bi-unlock me-1"></i>Ücretsiz</span>
+                        {% endif %}
+                    </div>
+                    <div style="font-weight:700; color:var(--lol-text-light); margin-bottom:0.3rem;">
+                        {{ champ.name }}
+                    </div>
+                    <small style="color:var(--lol-text);">
+                        Zorluk: {{ champ.get_difficulty_display }}
+                    </small>
+                </div>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-4" style="color:var(--lol-text);">
+        <i class="bi bi-emoji-frown" style="font-size:2rem;"></i>
+        <p class="mt-2 mb-0">Bu rolde henüz şampiyon bulunmuyor.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

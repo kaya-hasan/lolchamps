@@ -1,0 +1,228 @@
+{% extends "champs/base.html" %}
+
+{% block title %}Şampiyonlar — LOL Champs{% endblock %}
+{% block meta_description %}League of Legends şampiyonlarını keşfedin, tier listelerini inceleyin ve yorumlarınızı paylaşın.{% endblock %}
+
+{% block extra_css %}
+<style>
+.filter-btn {
+    background: var(--lol-card);
+    color: var(--lol-text);
+    border: 1px solid var(--lol-border);
+    padding: 0.4rem 1rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.3s;
+    text-decoration: none;
+    display: inline-block;
+}
+.filter-btn:hover,
+.filter-btn.active {
+    background: rgba(200, 155, 60, 0.15);
+    color: var(--lol-gold);
+    border-color: var(--lol-gold);
+}
+.champ-card-link {
+    text-decoration: none;
+    color: inherit;
+}
+.champ-name {
+    font-weight: 700;
+    font-size: 1.05rem;
+    color: var(--lol-text-light);
+    margin-bottom: 0.5rem;
+}
+.champ-thumb {
+    width: 56px;
+    height: 56px;
+    border-radius: 8px;
+    object-fit: cover;
+    border: 1px solid var(--lol-border);
+}
+.champ-thumb-placeholder {
+    width: 56px;
+    height: 56px;
+    border-radius: 8px;
+    border: 1px dashed var(--lol-border);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--lol-text);
+    font-size: 1.2rem;
+}
+.champ-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+.difficulty-dots span {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 2px;
+}
+.difficulty-dots .filled { background: var(--lol-gold); }
+.difficulty-dots .empty  { background: #2a2f45; }
+.search-box {
+    background: #0d1117;
+    border: 1px solid var(--lol-border);
+    color: var(--lol-text-light);
+    border-radius: 6px;
+    padding: 0.6rem 0.9rem;
+}
+.search-box:focus {
+    border-color: var(--lol-gold);
+    box-shadow: 0 0 0 3px rgba(200, 155, 60, 0.15);
+    outline: none;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="fade-in-up">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="section-title mb-0"><i class="bi bi-shield-shaded me-2"></i>Şampiyonlar</h1>
+        {% if user.is_authenticated %}
+        <a href="{% url 'champs:champion_create' %}" class="btn btn-lol">
+            <i class="bi bi-plus-lg me-1"></i> Yeni Ekle
+        </a>
+        {% else %}
+        <a href="#" class="btn btn-lol" data-bs-toggle="modal" data-bs-target="#loginRequiredModal">
+            <i class="bi bi-plus-lg me-1"></i> Yeni Ekle
+        </a>
+        {% endif %}
+    </div>
+
+    <form method="get" class="card-lol p-3 mb-4">
+        <div class="row g-2 align-items-center">
+            <div class="col-12 col-md-6">
+                <input type="text" name="q" value="{{ q }}" class="search-box w-100" placeholder="İsme veya hikayeye göre ara...">
+            </div>
+            <div class="col-12 col-md-4">
+                <select name="sort" class="form-select form-select-lol">
+                    <option value="newest" {% if selected_sort == 'newest' %}selected{% endif %}>En Yeni</option>
+                    <option value="oldest" {% if selected_sort == 'oldest' %}selected{% endif %}>En Eski</option>
+                    <option value="name_asc" {% if selected_sort == 'name_asc' %}selected{% endif %}>İsim (A-Z)</option>
+                    <option value="name_desc" {% if selected_sort == 'name_desc' %}selected{% endif %}>İsim (Z-A)</option>
+                    <option value="tier_asc" {% if selected_sort == 'tier_asc' %}selected{% endif %}>Tier (S-D)</option>
+                    <option value="tier_desc" {% if selected_sort == 'tier_desc' %}selected{% endif %}>Tier (D-S)</option>
+                    <option value="difficulty_asc" {% if selected_sort == 'difficulty_asc' %}selected{% endif %}>Zorluk (Kolay-Zor)</option>
+                    <option value="difficulty_desc" {% if selected_sort == 'difficulty_desc' %}selected{% endif %}>Zorluk (Zor-Kolay)</option>
+                </select>
+            </div>
+            <div class="col-12 col-md-2 d-grid">
+                {% if selected_role %}
+                <input type="hidden" name="role_id" value="{{ selected_role }}">
+                {% endif %}
+                <button type="submit" class="btn btn-lol">
+                    <i class="bi bi-search me-1"></i> Uygula
+                </button>
+            </div>
+        </div>
+    </form>
+
+    <!-- Role Filter -->
+    <div class="mb-4 d-flex flex-wrap gap-2">
+        <a href="{% url 'champs:champion_list' %}?{% if q %}q={{ q|urlencode }}&{% endif %}{% if selected_sort %}sort={{ selected_sort }}{% endif %}" class="filter-btn {% if not selected_role %}active{% endif %}">
+            Tümü
+        </a>
+        {% for role in roles %}
+        <a href="{% url 'champs:champion_list' %}?role_id={{ role.id }}{% if q %}&q={{ q|urlencode }}{% endif %}{% if selected_sort %}&sort={{ selected_sort }}{% endif %}"
+           class="filter-btn {% if selected_role == role.id %}active{% endif %}">
+            {{ role.name }}
+        </a>
+        {% endfor %}
+    </div>
+
+    <hr class="section-divider">
+
+    <!-- Champion Grid -->
+    {% if champs %}
+    <div class="row g-4">
+        {% for champ in champs %}
+        <div class="col-sm-6 col-md-4 col-lg-3 fade-in-up">
+            <a href="{% url 'champs:champion_detail' champ.slug %}" class="champ-card-link">
+                <div class="card-lol p-3 h-100">
+                    <!-- Top row: Tier + Free -->
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <span class="tier-badge tier-{{ champ.get_tier_display|lower }}">
+                            {{ champ.get_tier_display }}
+                        </span>
+                        {% if champ.is_free %}
+                        <span class="free-badge"><i class="bi bi-unlock me-1"></i>Ücretsiz</span>
+                        {% endif %}
+                    </div>
+
+                    <!-- Name -->
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        {% if champ.image_url %}
+                        <img src="{{ champ.image_url }}" alt="{{ champ.name }}" class="champ-thumb" loading="lazy">
+                        {% else %}
+                        <span class="champ-thumb-placeholder"><i class="bi bi-image"></i></span>
+                        {% endif %}
+                        <div class="champ-name mb-0">{{ champ.name }}</div>
+                    </div>
+
+                    <!-- Meta -->
+                    <div class="champ-meta">
+                        <span class="role-pill">{{ champ.role.name }}</span>
+                        <span class="difficulty-dots" title="Zorluk: {{ champ.get_difficulty_display }}">
+                            {% for i in "123" %}
+                                {% if forloop.counter <= champ.difficulty %}
+                                    <span class="filled"></span>
+                                {% else %}
+                                    <span class="empty"></span>
+                                {% endif %}
+                            {% endfor %}
+                        </span>
+                    </div>
+                </div>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% if is_paginated %}
+    <div class="d-flex justify-content-center align-items-center gap-2 mt-4 flex-wrap">
+        {% if page_obj.has_previous %}
+        <a class="btn btn-lol-outline btn-sm"
+           href="?page={{ page_obj.previous_page_number }}{% if selected_role %}&role_id={{ selected_role }}{% endif %}{% if q %}&q={{ q|urlencode }}{% endif %}{% if selected_sort %}&sort={{ selected_sort }}{% endif %}">
+            <i class="bi bi-chevron-left me-1"></i> Önceki
+        </a>
+        {% endif %}
+
+        <span class="px-2" style="color: var(--lol-text);">
+            Sayfa {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
+        </span>
+
+        {% if page_obj.has_next %}
+        <a class="btn btn-lol-outline btn-sm"
+           href="?page={{ page_obj.next_page_number }}{% if selected_role %}&role_id={{ selected_role }}{% endif %}{% if q %}&q={{ q|urlencode }}{% endif %}{% if selected_sort %}&sort={{ selected_sort }}{% endif %}">
+            Sonraki <i class="bi bi-chevron-right ms-1"></i>
+        </a>
+        {% endif %}
+    </div>
+    {% endif %}
+    {% else %}
+    <div class="text-center py-5">
+        <i class="bi bi-emoji-frown" style="font-size: 3rem; color: var(--lol-text);"></i>
+        <p class="mt-3" style="color: var(--lol-text);">Aramana uygun şampiyon bulunamadı.</p>
+        {% if user.is_authenticated %}
+        <a href="{% url 'champs:champion_create' %}" class="btn btn-lol mt-2">
+            <i class="bi bi-plus-lg me-1"></i> İlk Şampiyonu Ekle
+        </a>
+        {% else %}
+        <a href="#" class="btn btn-lol mt-2" data-bs-toggle="modal" data-bs-target="#loginRequiredModal">
+            <i class="bi bi-plus-lg me-1"></i> İlk Şampiyonu Ekle
+        </a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

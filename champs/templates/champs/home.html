@@ -1,0 +1,53 @@
+{% extends "champs/base.html" %}
+
+{% block title %}Hoş Geldiniz — LOL Champs{% endblock %}
+{% block meta_description %}LOL Champs uygulamasına hoş geldiniz. Şampiyonları inceleyin, yorum yapın ve tier bilgilerini keşfedin.{% endblock %}
+
+{% block content %}
+<div class="fade-in-up">
+    <div class="card-lol p-5 mb-4 text-center">
+        <h1 class="section-title mb-3">LOL Champs'e Hoş Geldiniz</h1>
+        <p style="color: var(--lol-text); max-width: 760px; margin: 0 auto 1.5rem;">
+            Bu platformda şampiyonları role, zorluk ve tier bilgilerine göre inceleyebilir, detaylarını görebilir ve yorum yapabilirsiniz.
+        </p>
+        <div class="d-flex justify-content-center gap-2 flex-wrap">
+            <a href="{% url 'champs:champion_list' %}" class="btn btn-lol">
+                <i class="bi bi-shield-shaded me-1"></i> Şampiyonları Gör
+            </a>
+            {% if user.is_authenticated %}
+            <a href="{% url 'champs:champion_create' %}" class="btn btn-lol-outline">
+                <i class="bi bi-plus-lg me-1"></i> Yeni Şampiyon
+            </a>
+            {% else %}
+            <a href="#" class="btn btn-lol-outline" data-bs-toggle="modal" data-bs-target="#loginRequiredModal">
+                <i class="bi bi-plus-lg me-1"></i> Yeni Şampiyon
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-12 col-md-4">
+            <div class="card-lol p-4 text-center h-100">
+                <div style="font-size: 2rem; color: var(--lol-gold);"><i class="bi bi-trophy"></i></div>
+                <div style="font-size: 1.6rem; font-weight: 800; color: var(--lol-gold-light);">{{ champion_count }}</div>
+                <div style="color: var(--lol-text);">Toplam Şampiyon</div>
+            </div>
+        </div>
+        <div class="col-12 col-md-4">
+            <div class="card-lol p-4 text-center h-100">
+                <div style="font-size: 2rem; color: var(--lol-gold);"><i class="bi bi-diagram-3"></i></div>
+                <div style="font-size: 1.6rem; font-weight: 800; color: var(--lol-gold-light);">{{ role_count }}</div>
+                <div style="color: var(--lol-text);">Toplam Rol</div>
+            </div>
+        </div>
+        <div class="col-12 col-md-4">
+            <div class="card-lol p-4 text-center h-100">
+                <div style="font-size: 2rem; color: var(--lol-gold);"><i class="bi bi-chat-left-text"></i></div>
+                <div style="font-size: 1.6rem; font-weight: 800; color: var(--lol-gold-light);">{{ review_count }}</div>
+                <div style="color: var(--lol-text);">Toplam Yorum</div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

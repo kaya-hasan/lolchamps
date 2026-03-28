@@ -1,0 +1,306 @@
+{% extends "champs/base.html" %}
+
+{% block title %}{{ champion.name }} — LOL Champs{% endblock %}
+{% block meta_description %}{{ champion.name }} şampiyonunun detayları, yorumları ve tier bilgisi.{% endblock %}
+
+{% block extra_css %}
+<style>
+.detail-header {
+    background: linear-gradient(135deg, var(--lol-card) 0%, #141832 100%);
+    border: 1px solid var(--lol-border);
+    border-radius: 12px;
+    padding: 2rem;
+    position: relative;
+    overflow: hidden;
+}
+.detail-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 200px;
+    height: 200px;
+    background: radial-gradient(circle, rgba(200,155,60,0.08), transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+}
+.detail-name {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--lol-gold-light);
+}
+.detail-champ-image {
+    width: 88px;
+    height: 88px;
+    border-radius: 12px;
+    object-fit: cover;
+    border: 1px solid var(--lol-border);
+}
+.detail-champ-placeholder {
+    width: 88px;
+    height: 88px;
+    border-radius: 12px;
+    border: 1px dashed var(--lol-border);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--lol-text);
+    font-size: 1.8rem;
+}
+.detail-stat {
+    text-align: center;
+    padding: 1rem;
+    background: rgba(0,0,0,0.2);
+    border-radius: 8px;
+    border: 1px solid var(--lol-border);
+}
+.detail-stat-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--lol-text);
+    margin-bottom: 0.3rem;
+}
+.detail-stat-value {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: var(--lol-gold);
+}
+.lore-text {
+    color: var(--lol-text);
+    line-height: 1.75;
+    font-size: 0.95rem;
+}
+.review-card {
+    background: var(--lol-card);
+    border: 1px solid var(--lol-border);
+    border-radius: 8px;
+    padding: 1.25rem;
+    transition: border-color 0.3s;
+}
+.review-card:hover {
+    border-color: rgba(200, 155, 60, 0.3);
+}
+.review-user {
+    font-weight: 600;
+    color: var(--lol-teal);
+    font-size: 0.9rem;
+}
+.review-date {
+    font-size: 0.75rem;
+    color: var(--lol-text);
+}
+.review-comment {
+    color: var(--lol-text-light);
+    font-size: 0.9rem;
+    line-height: 1.6;
+}
+.build-item-thumb {
+    width: 42px;
+    height: 42px;
+    border-radius: 8px;
+    object-fit: cover;
+    border: 1px solid var(--lol-border);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="fade-in-up">
+    <!-- Breadcrumb -->
+    <nav class="mb-4">
+        <a href="{% url 'champs:champion_list' %}" class="text-decoration-none" style="color: var(--lol-text);">
+            <i class="bi bi-arrow-left me-1"></i> Şampiyonlara Dön
+        </a>
+    </nav>
+
+    <!-- Hero Header -->
+    <div class="detail-header mb-4">
+        <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+            <div>
+                <div class="d-flex align-items-center gap-3 mb-2">
+                    {% if champion.image_url %}
+                    <img src="{{ champion.image_url }}" alt="{{ champion.name }}" class="detail-champ-image">
+                    {% else %}
+                    <span class="detail-champ-placeholder"><i class="bi bi-image"></i></span>
+                    {% endif %}
+                    <span class="tier-badge tier-{{ champion.get_tier_display|lower }}" style="width:40px;height:40px;font-size:1.1rem;">
+                        {{ champion.get_tier_display }}
+                    </span>
+                    <h1 class="detail-name mb-0">{{ champion.name }}</h1>
+                    {% if champion.is_free %}
+                    <span class="free-badge"><i class="bi bi-unlock me-1"></i>Ücretsiz</span>
+                    {% endif %}
+                </div>
+                <a href="{% url 'champs:role_detail' champion.role.pk %}" class="role-pill text-decoration-none">
+                    {{ champion.role.name }}
+                </a>
+            </div>
+            <div class="d-flex gap-2 flex-wrap" style="position: relative; z-index: 2;">
+                <a href="{% url 'champs:champion_update' champion.pk %}" class="btn btn-lol-outline btn-sm">
+                    <i class="bi bi-pencil me-1"></i> Düzenle
+                </a>
+                <a href="{% url 'champs:champion_delete' champion.pk %}" class="btn btn-lol-danger btn-sm">
+                    <i class="bi bi-trash me-1"></i> Sil
+                </a>
+            </div>
+        </div>
+
+        <!-- Stats Row -->
+        <div class="row g-3 mt-3">
+            <div class="col-6 col-md-3">
+                <div class="detail-stat">
+                    <div class="detail-stat-label">Zorluk</div>
+                    <div class="detail-stat-value">{{ champion.get_difficulty_display }}</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="detail-stat">
+                    <div class="detail-stat-label">Oynama Sıklığı</div>
+                    <div class="detail-stat-value">{{ champion.get_playing_freq_display }}</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="detail-stat">
+                    <div class="detail-stat-label">Tier</div>
+                    <div class="detail-stat-value">{{ champion.get_tier_display }} Tier</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="detail-stat">
+                    <div class="detail-stat-label">Eklenme</div>
+                    <div class="detail-stat-value" style="font-size:0.85rem;">{{ champion.created_at|date:"d M Y" }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lore -->
+    {% if champion.lore %}
+    <div class="card-lol p-4 mb-4">
+        <h2 style="font-size:1.1rem; font-weight:700; color:var(--lol-gold); margin-bottom:1rem;">
+            <i class="bi bi-book me-2"></i>Hikaye
+        </h2>
+        <p class="lore-text mb-0">{{ champion.lore }}</p>
+    </div>
+    {% endif %}
+
+    <hr class="section-divider">
+
+    {% if build_insight %}
+    <div class="card-lol p-4 mb-4">
+        <h2 style="font-size:1.1rem; font-weight:700; color:var(--lol-gold); margin-bottom:1rem;">
+            <i class="bi bi-graph-up-arrow me-2"></i>Önerilen Build
+        </h2>
+        <p style="color:var(--lol-text); margin-bottom:1rem;">
+            Kaynak: {{ build_insight.source_region|upper }} | Örnek maç: {{ build_insight.sample_size }} | Kazanma oranı: %{{ build_insight.win_rate }}
+        </p>
+
+        {% if build_insight.recommended_items %}
+        <h3 style="font-size:0.95rem; color:var(--lol-gold-light); margin-bottom:0.7rem;">Önerilen Eşyalar</h3>
+        <div class="d-flex flex-wrap gap-2 mb-3">
+            {% for item in build_insight.recommended_items %}
+            <div class="d-flex align-items-center gap-2 card-lol p-2">
+                <img src="{{ item.image_url }}" alt="{{ item.name }}" class="build-item-thumb">
+                <div>
+                    <div style="font-size:0.85rem; color:var(--lol-text-light);">{{ item.name }}</div>
+                    <div style="font-size:0.75rem; color:var(--lol-text);">Pick: %{{ item.pick_rate }}</div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if build_insight.recommended_runes %}
+        <h3 style="font-size:0.95rem; color:var(--lol-gold-light); margin-bottom:0.7rem;">Önerilen Rün Sayfaları</h3>
+        <div class="d-flex flex-column gap-2">
+            {% for rune in build_insight.recommended_runes %}
+            <div class="card-lol p-2">
+                <div style="font-size:0.85rem; color:var(--lol-text-light);">
+                    {{ rune.primary_style.name }} / {{ rune.sub_style.name }} - {{ rune.keystone.name }}
+                </div>
+                <div style="font-size:0.75rem; color:var(--lol-text);">Pick: %{{ rune.pick_rate }}</div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <hr class="section-divider">
+
+    <!-- Reviews Section -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="section-title mb-0" style="font-size:1.3rem;">
+            <i class="bi bi-chat-square-text me-2"></i>Yorumlar
+            <span style="font-size:0.85rem; opacity:0.7;">({{ reviews.count }})</span>
+        </h2>
+    </div>
+
+    {% if reviews %}
+    <div class="d-flex flex-column gap-3 mb-4">
+        {% for review in reviews %}
+        <div class="review-card">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <div>
+                    <span class="review-user"><i class="bi bi-person-fill me-1"></i>{{ review.user.username }}</span>
+                    <span class="review-date ms-2">{{ review.created_at|date:"d M Y, H:i" }}</span>
+                </div>
+                <div>
+                    {% for i in "12345" %}
+                        {% if forloop.counter <= review.rating %}
+                            <i class="bi bi-star-fill star-filled"></i>
+                        {% else %}
+                            <i class="bi bi-star star-empty"></i>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+            <p class="review-comment mb-0">{{ review.comment }}</p>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-4 mb-4" style="color:var(--lol-text);">
+        <i class="bi bi-chat-square-dots" style="font-size:2rem;"></i>
+        <p class="mt-2 mb-0">Henüz yorum yapılmamış. İlk yorumu siz yapın!</p>
+    </div>
+    {% endif %}
+
+    <!-- Inline Review Form -->
+    {% if review_form %}
+    <div class="card-lol p-4">
+        <h3 style="font-size:1.1rem; font-weight:700; color:var(--lol-gold); margin-bottom:1rem;">
+            <i class="bi bi-pencil-square me-2"></i>Yorum Yaz
+        </h3>
+        <form method="post" action="{% url 'champs:add_review' champion.slug %}">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label class="form-label-lol">Puan</label>
+                <div>
+                    {% for value, label in review_form.fields.rating.choices %}
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="rating" id="rating_{{ value }}" value="{{ value }}">
+                        <label class="form-check-label" for="rating_{{ value }}" style="color:var(--lol-gold);">
+                            {{ value }} <i class="bi bi-star-fill star-filled"></i>
+                        </label>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="mb-3">
+                <label for="id_comment" class="form-label-lol">Yorum</label>
+                <textarea name="comment" id="id_comment" rows="4" class="form-control form-control-lol"
+                          placeholder="Şampiyon hakkında düşüncelerinizi yazın..."></textarea>
+            </div>
+            <button type="submit" class="btn btn-lol"><i class="bi bi-send me-1"></i> Gönder</button>
+        </form>
+    </div>
+    {% elif not user.is_authenticated %}
+    <div class="card-lol p-4 text-center" style="color:var(--lol-text);">
+        <i class="bi bi-lock" style="font-size:1.5rem;"></i>
+        <p class="mt-2 mb-0">Yorum yapabilmek için giriş yapmanız gerekmektedir.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

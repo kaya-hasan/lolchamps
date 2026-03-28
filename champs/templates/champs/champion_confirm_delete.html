@@ -1,0 +1,35 @@
+{% extends "champs/base.html" %}
+
+{% block title %}{{ object.name }} Sil — LOL Champs{% endblock %}
+
+{% block content %}
+<div class="fade-in-up" style="max-width: 550px; margin: 0 auto;">
+    <div class="card-lol p-4 text-center">
+        <div style="font-size: 3rem; color: var(--lol-red); margin-bottom: 1rem;">
+            <i class="bi bi-exclamation-triangle"></i>
+        </div>
+
+        <h1 style="font-size: 1.3rem; font-weight: 700; color: var(--lol-gold-light); margin-bottom: 0.5rem;">
+            Şampiyonu Sil
+        </h1>
+        <p style="color: var(--lol-text); margin-bottom: 1.5rem;">
+            <strong style="color: var(--lol-gold);">{{ object.name }}</strong> şampiyonunu silmek istediğinize emin misiniz?
+            <br><small>Bu işlem geri alınamaz.</small>
+        </p>
+
+        <hr class="section-divider">
+
+        <form method="post" action="{% url 'champs:champion_delete' object.pk %}">
+            {% csrf_token %}
+            <div class="d-flex justify-content-center align-items-center gap-3 flex-wrap">
+                <button type="submit" class="btn btn-lol-danger">
+                    <i class="bi bi-trash me-1"></i> Evet, Sil
+                </button>
+                <a href="{% url 'champs:champion_list' %}" class="btn btn-lol-outline">
+                    <i class="bi bi-x-lg me-1"></i> İptal
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
