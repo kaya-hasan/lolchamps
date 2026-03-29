@@ -32,3 +32,12 @@ def fetch_champions(version: str, locale: str) -> dict:
     if "data" not in payload:
         raise DataDragonError("Champion payload has no 'data' key.")
     return payload
+
+
+def fetch_champion_full(version: str, locale: str) -> dict:
+    payload = _get_json(
+        f"{DATA_DRAGON_BASE}/cdn/{version}/data/{locale}/championFull.json"
+    )
+    if "data" not in payload:
+        raise DataDragonError("Champion full payload has no 'data' key.")
+    return payload

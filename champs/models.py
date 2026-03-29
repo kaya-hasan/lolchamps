@@ -47,6 +47,10 @@ class Champion(models.Model):
     tier = models.IntegerField(choices=Tier_Chosing, default=1)
     lore = models.TextField(blank=True)
     image_url = models.URLField(blank=True)
+    passive_name = models.CharField(max_length=120, blank=True)
+    passive_description = models.TextField(blank=True)
+    passive_image_url = models.URLField(blank=True)
+    abilities = models.JSONField(default=list, blank=True)
     is_free = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 

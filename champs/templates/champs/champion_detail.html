@@ -102,6 +102,19 @@
     object-fit: cover;
     border: 1px solid var(--lol-border);
 }
+.ability-card {
+    background: rgba(0, 0, 0, 0.18);
+    border: 1px solid var(--lol-border);
+    border-radius: 8px;
+    padding: 0.9rem;
+}
+.ability-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 8px;
+    object-fit: cover;
+    border: 1px solid var(--lol-border);
+}
 </style>
 {% endblock %}
 
@@ -182,6 +195,66 @@
             <i class="bi bi-book me-2"></i>Hikaye
         </h2>
         <p class="lore-text mb-0">{{ champion.lore }}</p>
+    </div>
+    {% endif %}
+
+    <hr class="section-divider">
+
+    {% if champion.passive_name or champion.abilities %}
+    <div class="card-lol p-4 mb-4">
+        <h2 style="font-size:1.1rem; font-weight:700; color:var(--lol-gold); margin-bottom:1rem;">
+            <i class="bi bi-lightning-charge me-2"></i>Yetenekler
+        </h2>
+
+        {% if champion.passive_name %}
+        <div class="ability-card mb-3">
+            <div class="d-flex gap-2 align-items-center mb-2">
+                {% if champion.passive_image_url %}
+                <img src="{{ champion.passive_image_url }}" alt="{{ champion.passive_name }}" class="ability-icon">
+                {% endif %}
+                <div>
+                    <div style="font-size:0.75rem; color:var(--lol-text);">Pasif</div>
+                    <div style="font-weight:700; color:var(--lol-gold-light);">{{ champion.passive_name }}</div>
+                </div>
+            </div>
+            <div style="font-size:0.88rem; color:var(--lol-text-light); line-height:1.5;">
+                {{ champion.passive_description|safe }}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if champion.abilities %}
+        <div class="d-flex flex-column gap-2">
+            {% for ability in champion.abilities %}
+            <div class="ability-card">
+                <div class="d-flex gap-2 align-items-center mb-2">
+                    {% if ability.image_url %}
+                    <img src="{{ ability.image_url }}" alt="{{ ability.name }}" class="ability-icon">
+                    {% endif %}
+                    <div>
+                        <div style="font-size:0.75rem; color:var(--lol-text);">
+                            {% if forloop.counter == 1 %}Q
+                            {% elif forloop.counter == 2 %}W
+                            {% elif forloop.counter == 3 %}E
+                            {% elif forloop.counter == 4 %}R
+                            {% else %}Yetenek {{ forloop.counter }}
+                            {% endif %}
+                        </div>
+                        <div style="font-weight:700; color:var(--lol-gold-light);">{{ ability.name }}</div>
+                    </div>
+                </div>
+                <div style="font-size:0.88rem; color:var(--lol-text-light); line-height:1.5;">
+                    {{ ability.description|safe }}
+                </div>
+                <div class="mt-2" style="font-size:0.76rem; color:var(--lol-text);">
+                    {% if ability.cooldown %}CD: {{ ability.cooldown }}{% endif %}
+                    {% if ability.cost %} | Maliyet: {{ ability.cost }}{% endif %}
+                    {% if ability.range %} | Menzil: {{ ability.range }}{% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
     </div>
     {% endif %}
 

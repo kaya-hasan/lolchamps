@@ -5,6 +5,7 @@ from django.utils.text import slugify
 from champs.models import Champion, Role, ChampionBuildInsight
 from champs.services.riot_data_dragon import (
     DataDragonError,
+    fetch_champion_full,
     fetch_champions,
     get_latest_version,
 )
@@ -157,10 +158,12 @@ class Command(BaseCommand):
 
         try:
             payload = fetch_champions(version=version, locale=locale)
+            full_payload = fetch_champion_full(version=version, locale=locale)
         except DataDragonError as exc:
             raise CommandError(str(exc)) from exc
 
         champions = payload.get("data", {})
+        full_champions = full_payload.get("data", {})
         created = 0
         updated = 0
         skipped = 0
@@ -188,6 +191,33 @@ class Command(BaseCommand):
             image_url = (
                 f"https://ddragon.leagueoflegends.com/cdn/{version}/img/champion/{key}.png"
             )
+            full_data = full_champions.get(key, {})
+            passive = full_data.get("passive", {})
+            passive_image = passive.get("image", {}).get("full", "")
+            passive_image_url = (
+                f"https://ddragon.leagueoflegends.com/cdn/{version}/img/passive/{passive_image}"
+                if passive_image
+                else ""
+            )
+            abilities = []
+            for spell in full_data.get("spells", []):
+                spell_image = spell.get("image", {}).get("full", "")
+                spell_image_url = (
+                    f"https://ddragon.leagueoflegends.com/cdn/{version}/img/spell/{spell_image}"
+                    if spell_image
+                    else ""
+                )
+                abilities.append(
+                    {
+                        "id": spell.get("id", ""),
+                        "name": spell.get("name", ""),
+                        "description": spell.get("description", ""),
+                        "cooldown": spell.get("cooldownBurn", ""),
+                        "cost": spell.get("costBurn", ""),
+                        "range": spell.get("rangeBurn", ""),
+                        "image_url": spell_image_url,
+                    }
+                )
 
             if not name:
                 continue
@@ -211,6 +241,10 @@ class Command(BaseCommand):
                 existing.tier = tier
                 existing.lore = lore
                 existing.image_url = image_url
+                existing.passive_name = passive.get("name", "")
+                existing.passive_description = passive.get("description", "")
+                existing.passive_image_url = passive_image_url
+                existing.abilities = abilities
                 existing.save(
                     update_fields=[
                         "slug",
@@ -220,6 +254,10 @@ class Command(BaseCommand):
                         "tier",
                         "lore",
                         "image_url",
+                        "passive_name",
+                        "passive_description",
+                        "passive_image_url",
+                        "abilities",
                     ]
                 )
                 updated += 1
@@ -238,6 +276,10 @@ class Command(BaseCommand):
                 tier=tier,
                 lore=lore,
                 image_url=image_url,
+                passive_name=passive.get("name", ""),
+                passive_description=passive.get("description", ""),
+                passive_image_url=passive_image_url,
+                abilities=abilities,
                 is_free=False,
             )
             created += 1
